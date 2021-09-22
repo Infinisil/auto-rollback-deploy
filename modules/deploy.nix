@@ -64,6 +64,12 @@ let
         '';
       };
 
+      sshOpts = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        example = "-o ControlPath=none -o BatchMode=yes";
+      };
+
       hasFastConnection = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -103,7 +109,7 @@ let
           privilegeEscalation = builtins.concatStringsSep " " config.privilegeEscalationCommand;
         in lib.dag.entryAnywhere ''
         echo "Triggering system switcher..." >&2
-        id=$(ssh -o BatchMode=yes "$HOST" exec "${switch}/bin/switch" start "${system}")
+        id=$(ssh ${config.sshOpts} "$HOST" exec "${switch}/bin/switch" start "${system}")
 
         echo "Trying to confirm success..." >&2
         active=1
@@ -113,7 +119,7 @@ let
           # a rebuild switch, even though with a reboot it wouldn't. Maybe use
           # the more modern and declarative networkd to get around this
           set +e
-          status=$(timeout --foreground 15 ssh -o ControlPath=none -o BatchMode=yes "$HOST" exec "${switch}/bin/switch" active "$id")
+          status=$(timeout --foreground 15 ssh ${config.sshOpts} "$HOST" exec "${switch}/bin/switch" active "$id")
           active=$?
           set -e
           sleep 1
@@ -176,7 +182,7 @@ let
         echo "Connecting to host..." >&2
 
         if ! OLDSYSTEM=$(timeout --foreground 30 \
-            ssh -o ControlPath=none -o BatchMode=yes "$HOST" realpath /run/current-system\
+            ssh ${config.sshOpts} "$HOST" realpath /run/current-system\
           ); then
           echo "Unable to connect to host!" >&2
           exit 1
