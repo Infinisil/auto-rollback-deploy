@@ -214,6 +214,8 @@ in {
     # TODO: Handle signals to kill the async command
     nixus.pkgs.writeScript "deploy" ''
       #!${nixus.pkgs.runtimeShell}
+      trap "echo Received signal, exiting; exit" INT TERM
+      trap "kill 0" EXIT
       ${lib.concatMapStrings (node: lib.optionalString node.enabled ''
 
         ${node.deployScript} &
