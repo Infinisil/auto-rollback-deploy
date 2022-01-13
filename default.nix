@@ -28,6 +28,7 @@ nixusArgs: conf: let
       modules/public-ip.nix
       modules/dns.nix
       modules/vpn
+      modules/groups.nix
       conf
       # Not naming it pkgs to avoid confusion and trouble for overriding scopes
       {
